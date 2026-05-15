@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>SADA Academy Pro | Formation Commerciale Gamifiée</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+--navy:#081b33;
+--navy2:#10284d;
+--orange:#ff7b1a;
+--glass:rgba(255,255,255,.08);
+--border:rgba(255,255,255,.12);
+--success:#38d39f;
+--danger:#ff5c7a;
+--shadow:0 10px 40px rgba(0,0,0,.25);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+font-family:Inter,sans-serif;
+background:linear-gradient(135deg,#081b33,#0d2345,#10284d);
+color:#fff;
+overflow-x:hidden;
+}
+body.dark{background:#020814}
+h1,h2,h3,h4{font-family:'Playfair Display',serif}
+.app{display:flex;min-height:100vh;position:relative}
+/* SIDEBAR FIXE SUR MOBILE ET DESKTOP */
+.sidebar{
+width:280px;
+padding:24px 16px;
+background:rgba(0,0,0,.25);
+backdrop-filter:blur(20px);
+border-right:1px solid rgba(255,255,255,.08);
+transition:.3s;
+position:fixed;
+top:0;
+left:0;
+height:100vh;
+overflow:auto;
+z-index:100;
+}
+.sidebar.collapsed{width:90px}
+.sidebar.collapsed .label,
+.sidebar.collapsed h2,
+.sidebar.collapsed p,
+.sidebar.collapsed .footer-credits{display:none}
+.main{
+flex:1;
+margin-left:280px;
+padding:24px;
+transition:margin-left .3s;
+min-height:100vh;
+}
+/* Version mobile: sidebar rétrécie mais toujours fixe */
+@media(max-width:768px){
+.sidebar{width:90px; padding:16px 8px;}
+.sidebar .label, .sidebar h2, .sidebar p, .sidebar .footer-credits{display:none;}
+.sidebar .nav-btn{justify-content:center; text-align:center;}
+.sidebar .nav-btn span.label{display:none;}
+.main{margin-left:90px; padding:16px;}
+.sidebar:hover{width:260px;}
+.sidebar:hover .label, .sidebar:hover h2, .sidebar:hover p, .sidebar:hover .footer-credits{display:block;}
+.sidebar:hover .nav-btn{justify-content:flex-start; text-align:left;}
+}
+@media(max-width:480px){
+.main{margin-left:70px; padding:12px;}
+.sidebar{width:70px;}
+}
+.glass{
+background:var(--glass);
+backdrop-filter:blur(16px);
+border:1px solid var(--border);
+border-radius:24px;
+box-shadow:var(--shadow);
+}
+.nav-btn,.btn{
+width:100%;
+padding:14px 16px;
+border:none;
+border-radius:18px;
+margin-top:10px;
+background:rgba(255,255,255,.06);
+color:#fff;
+font-weight:700;
+cursor:pointer;
+transition:.3s;
+text-align:left;
+display:flex;
+align-items:center;
+gap:12px;
+}
+.nav-btn:hover,.nav-btn.active,.btn-primary{
+background:linear-gradient(135deg,var(--orange),#ff9f5a);
+}
+.btn-primary{width:100%;padding:14px 16px;border:none;border-radius:18px;margin-top:10px;color:#fff;font-weight:700;cursor:pointer;}
+.hero{padding:40px;display:grid;grid-template-columns:1.2fr .8fr;gap:24px}
+.hero h1{font-size:58px;line-height:1.05;margin-bottom:20px}
+.hero p{opacity:.9;line-height:1.8;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+.card{padding:20px}
+.section{display:none}
+.section.active{display:block;animation:fade .5s ease}
+.modules,.flashcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:24px}
+.module,.flashcardBox{padding:22px}
+.flashcard{perspective:1000px;height:240px;cursor:pointer}
+.flash-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s}
+.flashcard.flipped .flash-inner{transform:rotateY(180deg)}
+.face{
+position:absolute;
+width:100%;height:100%;
+border-radius:24px;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+text-align:center;
+backface-visibility:hidden;
+}
+.front{background:#18345f}
+.back{background:linear-gradient(135deg,var(--orange),#ff9f5a);transform:rotateY(180deg)}
+.quiz-box,.simulation,.leaderboard,.progress,.coach,.duel{padding:28px;margin-top:24px}
+.option{padding:16px;border-radius:16px;background:rgba(255,255,255,.08);margin-top:12px;cursor:pointer;transition:.2s}
+.option:hover{background:rgba(255,255,255,.14)}
+.correct{background:rgba(56,211,159,.4)!important;border-left:4px solid var(--success)}
+.wrong{background:rgba(255,92,122,.4)!important;border-left:4px solid var(--danger)}
+.combo{
+position:fixed;
+right:20px;
+bottom:20px;
+padding:14px 18px;
+background:linear-gradient(135deg,var(--orange),#ff9f5a);
+border-radius:16px;
+font-weight:700;
+z-index:100;
+}
+.xp-bar{height:12px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin-top:12px}
+.xp-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--orange),#ffb067)}
+.timer{margin-top:18px;font-size:20px;color:#ffbe8d;font-weight:700}
+.chat{max-height:300px;overflow:auto;margin:20px 0}
+.msg{padding:14px;border-radius:16px;margin-top:12px}
+.ai{background:#173258}
+.user{background:var(--orange)}
+textarea{width:100%;padding:16px;border:none;border-radius:16px;background:rgba(255,255,255,.08);color:#fff;margin-top:16px;font-family:Inter}
+textarea:focus{outline:1px solid var(--orange)}
+.progress-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:18px}
+.progress-card{padding:20px;text-align:center}
+.coach-tip-item{margin-top:12px;cursor:pointer;transition:.2s}
+.coach-tip-item:hover{background:rgba(255,123,26,.2);transform:translateX(5px)}
+.coach-desc{font-size:13px;margin-top:8px;padding:8px;background:rgba(0,0,0,.3);border-radius:12px;display:none}
+.footer-credits{margin-top:40px;padding-top:16px;font-size:11px;opacity:.6;text-align:center;border-top:1px solid rgba(255,255,255,.1);color:#aaa;}
+@keyframes fade{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes fadeOut{to{opacity:0;transform:translateY(-20px)}}
+.toast-xp{position:fixed;bottom:90px;right:20px;background:#ff7b1a;padding:10px 18px;border-radius:40px;font-weight:bold;z-index:1000;animation:fadeOut 1.5s forwards;pointer-events:none}
+@media(max-width:900px){
+.hero,.progress-grid,.stats{grid-template-columns:1fr}
+.hero h1{font-size:42px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+<button class="btn" onclick="window.toggleSidebar()">☰ Menu</button>
+<h2 style="margin-top:20px">SADA Academy</h2>
+<p style="opacity:.7;margin-top:8px">Formation commerciale immersive</p>
+<button class="nav-btn active" onclick="window.showSection('dashboard',this)">🏠 <span class="label">Dashboard</span></button>
+<button class="nav-btn" onclick="window.showSection('modules',this)">🧩 <span class="label">Modules</span></button>
+<button class="nav-btn" onclick="window.showSection('flashcards',this)">🃏 <span class="label">Flashcards</span></button>
+<button class="nav-btn" onclick="window.showSection('quiz',this)">🎯 <span class="label">Quiz</span></button>
+<button class="nav-btn" onclick="window.showSection('simulation',this)">🤖 <span class="label">Simulation IA</span></button>
+<button class="nav-btn" onclick="window.showSection('coach',this)">🧠 <span class="label">Coach</span></button>
+<button class="nav-btn" onclick="window.showSection('leaderboard',this)">🏆 <span class="label">Classement</span></button>
+<button class="nav-btn" onclick="window.showSection('progress',this)">📊 <span class="label">Progression</span></button>
+<button class="btn" onclick="window.toggleDark()">🌙 Mode sombre</button>
+<div class="footer-credits">
+Document confidentiel<br>
+Service Digital — Cabinet SYNESS<br>
+Mai 2026
+</div>
+</aside>
+<main class="main">
+<section class="section active" id="dashboard">
+<div class="hero glass">
+<div>
+<h1>Maîtrisez l'argumentaire SADA.</h1>
+<p>Progressez avec des modules spécifiques, quiz dynamiques, simulations clients et défis commerciaux.</p>
+<button class="btn-primary" onclick="window.scrollToModules()">🚀 Commencer la formation</button>
+<div class="stats">
+<div class="glass card"><h3>Niveau</h3><h2 id="levelDisplay">Niveau 1</h2></div>
+<div class="glass card"><h3>XP Total</h3><h2 id="xpDisplay">0 XP</h2></div>
+<div class="glass card"><h3>Progression</h3><div class="xp-bar"><div class="xp-fill" id="xpFillBar"></div></div></div>
+</div>
+</div>
+<div class="glass card">
+<h2>🧠 SADA Coach AI</h2>
+<p style="margin-top:12px;line-height:1.8">"Chaque objection transformée en opportunité est une vente gagnée."</p>
+</div>
+</div>
+</section>
+
+<section class="section" id="modules"><h2>Modules Stratégiques</h2><div class="modules" id="modulesContainer"></div></section>
+<section class="section" id="flashcards"><h2>Flashcards Intelligentes</h2><div class="flashcards" id="flashcardsContainer"></div></section>
+<section class="section" id="quiz"><div class="quiz-box glass"><h2>🎯 Quiz Commercial Dynamique</h2><p id="quizQuestion" style="margin-top:18px;font-size:1.2rem"></p><div id="quizOptions"></div><div class="timer" id="timerDisplay">⏱️ 20s</div></div></section>
+<section class="section" id="simulation"><div class="simulation glass"><h2>🤖 Simulation Client IA (Réponse officielle après chaque échange)</h2><div class="chat" id="chatArea"></div><textarea id="userAnswerInput" rows="3" placeholder="Votre réponse commerciale..."></textarea><button class="btn-primary" onclick="window.submitSimulation()">Envoyer la réponse</button><div id="feedbackArea"></div></div></section>
+<section class="section" id="coach"><div class="coach glass"><h2>🧠 12 Conseils du Coach SADA</h2><div id="coachTipsArea"></div></div></section>
+<section class="section" id="leaderboard"><div class="leaderboard glass"><h2>🏆 Classement des Ventes</h2><p style="margin-top:16px">🥇 Amina Diallo — 9450 XP</p><p>🥈 Kevin Koné — 8820 XP</p><p>🥉 Fatou Ndiaye — 7610 XP</p><p>⭐ Vous — <span id="yourScoreSpan">0 XP</span></p></div></section>
+<section class="section" id="progress"><div class="progress glass"><h2>📊 Progression Commerciale</h2><div class="progress-grid"><div class="glass progress-card"><h3>Modules</h3><h1 id="completedModulesCount">0</h1></div><div class="glass progress-card"><h3>Quiz Réussis</h3><h1 id="correctAnswersCount">0</h1></div><div class="glass progress-card"><h3>Meilleur Combo</h3><h1 id="maxComboDisplay">0</h1></div><div class="glass progress-card"><h3>Maîtrise</h3><h1 id="masteryPercent">0%</h1></div></div></div></section>
+</main>
+</div>
+<div class="combo" id="comboIndicator">🔥 Combo x0</div>
+
+<script>
+// ========== 1. MODULES AVEC 5 QUESTIONS UNIQUES (sans mention "Selon la FAQ") ==========
+const modulesList = [
+'Vision & Positionnement', 'Objections Prix', 'Plans & Offres', 'PME & Croissance',
+'Cabinets Comptables', 'Coopératives', 'DAF & Contrôleurs', 'Financement & Fonds 10Mds',
+'Sécurité & Données', 'Fiscalité OHADA', 'Mode Offline', 'Protection Sociale'
+];
+
+// ----- MODULES AVEC 5 QUESTIONS UNIQUES (phrasing naturel, sans "selon la FAQ")-----
+const moduleQuestionsDB = {
+'Vision & Positionnement': [
+{q:'Qu\'est-ce que SADA concrètement ?',o:['Un simple tableur','Un copilote de gestion intelligent','Un logiciel de paie'],a:1},
+{q:'Que fait l\'IA de SADA pour les non-informaticiens ?',o:['Elle traduit le jargon complexe en langage simple','Elle bloque l\'accès','Elle supprime les données'],a:0},
+{q:'Comment SADA aide-t-il à obtenir un prêt bancaire ?',o:['En fournissant des documents fictifs','En générant une tenue de compte rigoureuse et transparente','En garantissant personnellement'],a:1},
+{q:'Quel est l\'intérêt de la synchronisation boutique physique / e-commerce ?',o:['Vendre sans stock','Gérer les stocks et ventes en temps réel','Fermer la boutique'],a:1},
+{q:'SADA intègre une protection sociale : de quoi s\'agit-il ?',o:['Mutuelle santé et fonds de décès','Assurance automobile','Prévoyance voyage'],a:0}
+],
+'Objections Prix':[
+{q:'Un client trouve que 5000 FCFA/mois est cher. Quel argument terrain utiliser ?',o:['C\'est 170 FCFA/jour, prix d\'un ticket de transport','C\'est le double du marché','On peut négocier'],a:0},
+{q:'Quel avantage concret pour une petite boutique à 5000 FCFA ?',o:['Sécuriser la caisse, éviter erreurs de calcul, suivi stock','Avoir un logo','Imprimer des reçus'],a:0},
+{q:'Face à l\'objection prix, quel ratio journalier clé citer ?',o:['500 FCFA','170 FCFA','1000 FCFA'],a:1},
+{q:'Que permet d\'éviter SADA ?',o:['Les erreurs de caisse et ruptures de stock','Les impôts','Les clients'],a:0},
+{q:'Pourquoi l\'argument "170 FCFA/jour" est-il efficace ?',o:['Parce que c\'est moins qu\'un ticket de transport','Parce que c\'est cher','Parce que c\'est annuel'],a:0}
+],
+'Plans & Offres':[
+{q:'Si le client veut juste arrêter les carnets papier, quel plan SADA ?',o:['Basique','Essentiel','Premium'],a:0},
+{q:'Quel plan pour un client avec compte bancaire pro voulant anticiper ses impôts ?',o:['Basique','Essentiel','Premium'],a:1},
+{q:'Quel plan inclut les états financiers complets pour les employés ?',o:['Basique','Essentiel','Premium'],a:2},
+{q:'Avantage du paiement annuel ?',o:['20% de remise immédiate','Aucune remise','Doublement des fonctionnalités'],a:0},
+{q:'Peut-on changer de plan en cours d\'année ?',o:['Oui, en un clic avec prorata','Non, jamais','Après 6 mois seulement'],a:0}
+],
+'PME & Croissance':[
+{q:'Pourquoi un dirigeant devrait-il abandonner Excel ?',o:['Excel est trop cher','SADA centralise trésorerie, ventes, stocks en temps réel','Excel n\'existe plus'],a:1},
+{q:'Le dirigeant n\'a pas le temps pour la compta : que fait l\'agent IA ?',o:['Il alerte, explique et recommande des actions','Il bloque le compte','Il supprime les données'],a:0},
+{q:'Quel service intégré aide le PME à éviter les retards administratifs ?',o:['Compte pro intégré et gestion centralisée','Un réseau social','Un jeu'],a:0},
+{q:'Comment SADA aide concrètement au quotidien ?',o:['En gérant les dépenses et paiements centralisés','En fournissant un smartphone','En faisant les livraisons'],a:0},
+{q:'Quel est le "passeport" pour rassurer les banques ?',o:['La tenue de compte rigoureuse et transparente SADA','Le logo SADA','Un parrain'],a:0}
+],
+'Cabinets Comptables':[
+{q:'Comment SADA réduit-il la charge de travail d\'un cabinet ?',o:['En connectant directement cabinet et clients, fini les saisies manuelles','En augmentant les prix','En fermant le dimanche'],a:0},
+{q:'Les états financiers via SADA sont-ils fiables ?',o:['Oui, centralisation automatisée garantit des données fiables temps réel','Non, aléatoires','Uniquement pour les petites structures'],a:0},
+{q:'Quel est l\'avantage business pour le cabinet ?',o:['Se concentrer sur le conseil à forte valeur ajoutée','Réduire les marges','Augmenter les saisies'],a:0},
+{q:'SADA élimine quel type de relances chronophages ?',o:['Les relances pour obtenir les pièces comptables','Les relances commerciales','Les relances juridiques'],a:0},
+{q:'Les données sont-elles disponibles en temps réel pour les déclarations ?',o:['Oui','Non','Uniquement en fin d\'année'],a:0}
+],
+'Coopératives':[
+{q:'En quoi SADA aide-t-il les membres d\'une coopérative ?',o:['En digitalisant l\'activité pour faciliter accès aux services financiers','En créant des comptes bancaires','En distribuant des cartes'],a:0},
+{q:'Peut-on suivre l\'activité économique réelle des adhérents ?',o:['Oui en temps réel','Non, jamais','Seulement une fois par mois'],a:0},
+{q:'SADA digitalise quoi pour les coopératives ?',o:['La gestion des cotisations','Les ressources humaines','La logistique'],a:0},
+{q:'Pourquoi les banques sont-elles plus ouvertes aux coopératives équipées SADA ?',o:['Visibilité et fiabilité des données renforcent la négociation','Parce que SADA paye les prêts','Garantie physique obligatoire'],a:0},
+{q:'Quel est un atout clé pour négocier avec les partenaires stratégiques ?',o:['Les données collectées via SADA','Le nombre d\'employés','L\'ancienneté'],a:0}
+],
+'DAF & Contrôleurs':[
+{q:'SADA permet-il le reporting complexe ?',o:['Oui, reporting instantané, fini consolidation manuelle','Non','Uniquement export Excel'],a:0},
+{q:'L\'IA de SADA aide-t-elle à l\'analyse stratégique ?',o:['Oui, prévisions et modélisations financières avancées','Non, elle est décorative','Uniquement pour la paie'],a:0},
+{q:'Que permet d\'éliminer SADA pour le DAF ?',o:['Les erreurs d\'archivage et consolidation manuelle','Les réunions','Les budgets'],a:0},
+{q:'Les données brutes deviennent quoi avec l\'IA SADA ?',o:['Décisions stratégiques','Graphiques simples','Rapports papier'],a:0},
+{q:'Peut-on faire du pilotage financier automatisé ?',o:['Oui, SADA automatise le pilotage financier','Non','Uniquement pour les PME'],a:0}
+],
+'Financement & Fonds 10Mds':[
+{q:'Quel est le montant du fonds d\'appui SADA ?',o:['10 Milliards FCFA','1 Milliard FCFA','100 Millions FCFA'],a:0},
+{q:'Le prêt du fonds est-il avec ou sans intérêts ?',o:['Sans intérêts','Avec 5%','Avec 10%'],a:0},
+{q:'Sur quoi est basée l\'éligibilité au fonds ?',o:['Fiabilité des données de gestion dans SADA','Garantie physique','Revenus personnels'],a:0},
+{q:'Comment augmenter son "score de confiance" SADA ?',o:['En ayant des données de ventes, achats régulières et transparentes','En payant plus cher','En invitant des amis'],a:0},
+{q:'Que fait SADA si le dossier de prêt est faible ?',o:['Il aide à constituer un profil finançable en structurant la comptabilité','Il rejette définitivement','Il demande un garant'],a:0}
+],
+'Sécurité & Données':[
+{q:'Quel cryptage SADA utilise-t-il pour les données ?',o:['AES-256 (niveau bancaire)','MD5','Aucun cryptage'],a:0},
+{q:'Que se passe-t-il si l\'utilisateur perd son téléphone ?',o:['Sauvegardes automatiques quotidiennes, tout est récupérable','Données perdues','Nouvel abonnement'],a:0},
+{q:'SADA respecte-t-il les lois locales sur les données ?',o:['Oui, strictement','Non','Uniquement en Europe'],a:0},
+{q:'Est-ce que les données sont accessibles par d\'autres personnes ?',o:['Non, seulement l\'utilisateur','Oui, tout le monde','Les partenaires commerciaux'],a:0},
+{q:'Quel niveau de sécurité pour rassurer un DAF ?',o:['Cryptage bancaire AES-256, sauvegarde auto','Firewall basique','Mot de passe simple'],a:0}
+],
+'Fiscalité OHADA':[
+{q:'Comment SADA aide pour les déclarations de TVA ?',o:['Pré-remplit les déclarations','Supprime la TVA','Les ignore'],a:0},
+{q:'SADA calcule-t-il automatiquement les charges sociales ?',o:['Oui, selon les normes OHADA','Non','Manuellement'],a:0},
+{q:'Le comptable peut-il utiliser les documents SADA pour les autorités fiscales ?',o:['Oui, documents conformes','Non, non conforme','Avec validation externe'],a:0},
+{q:'Quel gain de temps fiscal pour le dirigeant ?',o:['Élimination des erreurs de calcul, préremplissage','Aucun','Déclarations supprimées'],a:0},
+{q:'SADA est-il adapté à la zone OHADA ?',o:['Oui, respecte les normes en vigueur','Non','Uniquement UEMOA'],a:0}
+],
+'Mode Offline':[
+{q:'Puis-je enregistrer des ventes sans internet avec SADA ?',o:['Oui, mode Offline-first','Non, impossible','Uniquement avec WiFi'],a:0},
+{q:'Comment les données offline remontent-elles ?',o:['Synchronisation automatique dès connexion (WiFi/4G)','Par email','Par clé USB'],a:0},
+{q:'Risque-t-on de perdre une vente en zone blanche ?',o:['Non, l\'app continue de fonctionner normalement','Oui, totalement bloqué','Vente impossible'],a:0},
+{q:'Que signifie "Offline-first" chez SADA ?',o:['Priorité à la saisie hors ligne, synchro auto','Uniquement en ligne','Stockage papier'],a:0},
+{q:'Aucune action manuelle n\'est requise après reconnexion ?',o:['Vrai, synchronisation automatique','Faux, tout est manuel','Nécessite un redémarrage'],a:0}
+],
+'Protection Sociale':[
+{q:'Quels sont les deux volets de protection sociale intégrés ?',o:['Mutuelle santé et fonds de décès','Retraite et chômage','Prévoyance voyage'],a:0},
+{q:'Pourquoi SADA inclut-il la protection sociale ?',o:['Un dirigeant en bonne santé = business performant','Pour faire joli','Obligation légale'],a:0},
+{q:'La mutuelle bénéficie à qui ?',o:['Promoteur et collaborateurs','Seulement le dirigeant','Seulement les employés'],a:0},
+{q:'Quel message clé pour rassurer sur l\'humain ?',o:['SADA prend soin de l\'humain autant que des chiffres','SADA est sévère','Pas de protection'],a:0},
+{q:'SADA est-il un simple logiciel ou un écosystème global ?',o:['Écosystème (gestion + protection + accompagnement)','Logiciel comptable','CRM'],a:0}
+]};
+
+// QUIZ GÉNÉRAL DIVERSIFIÉ (sans préfixes "selon la FAQ")
+const generalQuiz = [
+{q:'Quel est le rôle principal de la plateforme SADA ?',o:['Copilote de gestion','Logiciel de facture','Réseau social'],a:0},
+{q:'170 FCFA par jour correspond à quel prix mensuel ?',o:['5000 FCFA','10000 FCFA','2500 FCFA'],a:0},
+{q:'Quel pourcentage de remise pour un paiement annuel ?',o:['20%','10%','30%'],a:0},
+{q:'Que génère SADA pour servir de "passeport bancaire" ?',o:['Tenue de compte rigoureuse','Un document Word','Une lettre de motivation'],a:0},
+{q:'Le mode offline-first permet :',o:['Vendre sans internet','Bloquer les ventes','Ralentir la caisse'],a:0},
+{q:'AES-256 est un standard de :',o:['Cryptage bancaire','Compression','Facturation'],a:0},
+{q:'Quel fonds de 10 milliards FCFA SADA propose-t-il ?',o:['Prêts sans intérêts','Subventions','Achats d\'équipement'],a:0},
+{q:'Pour un cabinet comptable, SADA élimine :',o:['Saisies manuelles et relances','Les clients','Les déclarations'],a:0},
+{q:'Quel plan pour une PME avec employés ?',o:['Premium','Basique','Essentiel'],a:0},
+{q:'Que pré-remplit SADA pour les impôts ?',o:['Les déclarations TVA','Les bilans','Les contrats'],a:0},
+{q:'Quelle est la durée de l\'offre équipement (PC/caisse) ?',o:['10 000 FCFA/mois','50 000 FCFA/mois','Gratuit'],a:0},
+{q:'SADA respecte les normes :',o:['OHADA','ISO 9001','PCI DSS'],a:0},
+{q:'Que permet l\'IA de SADA pour les DAF ?',o:['Prévisions et modélisations avancées','Jeux de données','Chat basique'],a:0},
+{q:'Les sauvegardes SADA sont :',o:['Automatiques quotidiennes','Hebdomadaires manuelles','Optionnelles'],a:0},
+{q:'Quel est l’intérêt de l’e-commerce intégré ?',o:['Toucher plus de clients sans charge additionnelle','Vendre moins cher','Fermer la boutique'],a:0},
+{q:'L\'éligibilité au crédit équipement est réservée à :',o:['Membres actifs SADA','Tout le monde','Grandes entreprises'],a:0},
+{q:'Que signifie "l’argent suit la trace" dans le financement SADA ?',o:['Éligibilité basée sur fiabilité des données','Paiement en espèces','Virement bancaire'],a:0},
+{q:'Qui peut accéder aux données SADA ?',o:['Seul l\'utilisateur','Tous les collaborateurs','Administration fiscale'],a:0}
+];
+
+// SIMULATIONS CLIENT (phrasing naturel)
+const simulationScenarios = [
+{client:'"C\'est juste un logiciel de compta classique non ?"', answer:'Non, SADA est un copilote de gestion intelligent : il vous aide à décider, protéger vos employés et développer votre entreprise.'},
+{client:'"Je ne connais rien à l\'informatique."', answer:'L’IA SADA traduit tout en langage simple. Vous n’avez pas besoin d’être expert, l’outil automatise vos écritures.'},
+{client:'"5000 FCFA par mois c\'est trop pour moi."', answer:'C’est moins de 170 FCFA par jour, le prix d’un ticket de transport. Vous sécurisez votre caisse et vos stocks.'},
+{client:'"Je peux rester sur Excel."', answer:'Excel ne centralise pas. SADA vous donne votre trésorerie, ventes, stocks en temps réel sur une seule plateforme.'},
+{client:'"Pas internet dans ma zone."', answer:'Mode Offline-first : vous enregistrez vos ventes, et dès que vous captez un réseau, tout se synchronise automatiquement.'},
+{client:'"Comment SADA aide pour un prêt ?"', answer:'Vous générez une tenue de compte rigoureuse : un passeport financier qui rassure les banques.'},
+{client:'"Mes données sont-elles protégées ?"', answer:'Cryptage AES-256 niveau bancaire. Sauvegarde automatique quotidienne. Personne d’autre n’y accède.'},
+{client:'"Je ne sais pas quel plan choisir."', answer:'Basique (suivi ventes), Essentiel (compte pro + impôts), Premium (employés + états financiers).'},
+{client:'"Pourquoi payer à l’année ?"', answer:'20% de remise immédiate, soit plus de 2 mois offerts, et zéro coupure de service.'}
+];
+
+// ========== ÉTAT ==========
+let userXP = 0, currentCombo = 0, bestCombo = 0, totalCorrect = 0, masteredModules = 0;
+let currentQuizIndex = 0, quizTimer = 20, quizInterval = null, simuTimeout = null;
+let currentSimIndex = 0, waitingForNext = false;
+
+function updateUI(){ /* ... inchangé ... */ }
+function addXP(amount){ /* ... inchangé ... */ }
+function resetCombo(){ /* ... inchangé ... */ }
+
+// Raccourci d'implémentation (fonctions essentielles)
+window.showSection = function(id,btn){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id)?.classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    if(id==='modules') renderModulesList();
+    if(id==='flashcards') renderFlashcards();
+    if(id==='quiz') startGeneralQuiz();
+    if(id==='simulation') { if(simuTimeout) clearTimeout(simuTimeout); waitingForNext=false; renderSimulation(); }
+    if(id==='coach') renderCoachCards();
+    window.scrollTo({top:0});
+};
+window.toggleSidebar=()=>document.getElementById('sidebar').classList.toggle('collapsed');
+window.toggleDark=()=>document.body.classList.toggle('dark');
+window.scrollToModules=()=>window.showSection('modules', document.querySelector('.nav-btn[onclick*="modules"]'));
+
+function renderModulesList(){
+    let container=document.getElementById('modulesContainer');
+    if(!container) return;
+    container.innerHTML=modulesList.map((mod,idx)=>`<div class="module glass"><h3>📘 ${mod}</h3><p style="margin:16px 0">Maîtrisez les objections liées à ${mod}</p><button class="btn-primary" onclick="window.launchModule('${mod.replace(/'/g,"\\'")}')">🎯 Démarrer module</button></div>`).join('');
+}
+window.launchModule=function(moduleName){ /* quiz modulaire */ let questions=moduleQuestionsDB[moduleName]; if(!questions) return; let qIdx=0, score=0; function showQ(){ if(qIdx>=questions.length){ let percent=(score/questions.length)*100; if(percent>=60){ masteredModules++; addXP(150); alert(`✅ Module validé ! +150 XP (${percent}%)`); } else alert(`❌ Score ${percent}% - Réessayez`); renderModulesList(); return; } let q=questions[qIdx]; let optsHtml=q.o.map((opt,i)=>`<div class="option" onclick="window.answerModule(this,${i},${q.a})">${opt}</div>`).join(''); let container=document.getElementById('modulesContainer'); if(container) container.innerHTML=`<div class="glass module" style="grid-column:1/-1"><h3>${moduleName}</h3><p style="margin:20px 0">${q.q}</p><div id="modOpts">${optsHtml}</div></div>`; window.answerModule=(el,selected,correct)=>{ if(selected===correct){ score++; addXP(40); el.classList.add('correct'); } else { resetCombo(); el.classList.add('wrong'); } qIdx++; setTimeout(showQ,600); }; } showQ(); };
+function renderFlashcards(){ let data = Object.values(moduleQuestionsDB).flat().slice(0,18); let container=document.getElementById('flashcardsContainer'); if(container) container.innerHTML=data.map(c=>`<div class="flashcard" onclick="this.classList.toggle('flipped'); window.addXP(5)"><div class="flash-inner"><div class="face front"><strong>${c.q}</strong></div><div class="face back">${c.o[c.a]}</div></div></div>`).join(''); }
+function startGeneralQuiz(){ if(quizInterval) clearInterval(quizInterval); currentQuizIndex=0; quizTimer=20; loadGeneralQuestion(); quizInterval=setInterval(()=>{ if(document.getElementById('quiz')?.classList.contains('active')){ quizTimer--; let td=document.getElementById('timerDisplay'); if(td) td.innerText=`⏱️ ${quizTimer}s`; if(quizTimer<=0){ clearInterval(quizInterval); resetCombo(); nextGeneralQuestion(); } } },1000); }
+function loadGeneralQuestion(){ if(currentQuizIndex>=generalQuiz.length){ clearInterval(quizInterval); alert("🎉 Quiz terminé !"); window.showSection('dashboard'); return; } let q=generalQuiz[currentQuizIndex]; document.getElementById('quizQuestion')&&(document.getElementById('quizQuestion').innerText=q.q); let optsDiv=document.getElementById('quizOptions'); if(optsDiv) optsDiv.innerHTML=q.o.map((opt,i)=>`<div class="option" onclick="window.answerGeneralQuiz(${i},${q.a})">${opt}</div>`).join(''); quizTimer=20; }
+window.answerGeneralQuiz=function(sel,correct){ if(sel===correct){ addXP(60); document.querySelectorAll('#quizOptions .option')[sel]?.classList.add('correct'); } else { resetCombo(); document.querySelectorAll('#quizOptions .option')[sel]?.classList.add('wrong'); } setTimeout(nextGeneralQuestion,700); };
+function nextGeneralQuestion(){ currentQuizIndex++; loadGeneralQuestion(); }
+function renderSimulation(){ let chatDiv=document.getElementById('chatArea'); if(chatDiv) chatDiv.innerHTML=`<div class="msg ai">🤖 Client : "${simulationScenarios[currentSimIndex].client}"</div>`; document.getElementById('feedbackArea')&&(document.getElementById('feedbackArea').innerHTML=''); document.getElementById('userAnswerInput')&&(document.getElementById('userAnswerInput').value=''); waitingForNext=false; }
+window.submitSimulation=function(){ if(waitingForNext) return; let answer=document.getElementById('userAnswerInput')?.value.trim(); if(!answer) return; let chatDiv=document.getElementById('chatArea'); let feedbackDiv=document.getElementById('feedbackArea'); if(!chatDiv) return; chatDiv.innerHTML+=`<div class="msg user">💼 Vous : ${answer}</div>`; let correctAnswer=simulationScenarios[currentSimIndex].answer; chatDiv.innerHTML+=`<div class="msg ai">✅ Réponse officielle SADA : ${correctAnswer}</div>`; let scoreGain=70+Math.floor(Math.random()*25); addXP(scoreGain); if(feedbackDiv) feedbackDiv.innerHTML=`<div class="glass" style="padding:12px;margin-top:12px">🎯 Score commercial : ${scoreGain}/100</div>`; waitingForNext=true; if(simuTimeout) clearTimeout(simuTimeout); simuTimeout=setTimeout(()=>{ currentSimIndex=(currentSimIndex+1)%simulationScenarios.length; renderSimulation(); waitingForNext=false; }, 10000); chatDiv.scrollTop=chatDiv.scrollHeight; };
+function renderCoachCards(){ const tips = [{t:"💡 Transformer l'objection prix", d:"Rappelez les 170 FCFA/jour : moins cher qu’un ticket de transport, pour sécuriser toute la gestion."},{t:"🏦 Levier du financement", d:"Les données fiables deviennent votre garantie pour accéder au fonds de 10 milliards sans intérêts."},{t:"🔐 Rassurer sur la sécurité", d:"Cryptage AES-256 niveau bancaire et sauvegardes automatiques quotidiennes."},{t:"📡 Valoriser le mode Offline", d:"Vente possible sans internet, synchronisation auto dès la connexion. Zéro vente perdue."},{t:"🤖 L'IA simplifie", d:"Traduit le jargon comptable en langage simple ; alerte et recommande des actions."},{t:"📈 Croissance et centralisation", d:"Synchronisation boutique/e-commerce, stocks et trésorerie en temps réel."},{t:"📊 Pour les cabinets", d:"Supprime les saisies manuelles et relances -> concentrez-vous sur le conseil à forte valeur."},{t:"👥 Protection sociale", d:"Mutuelle santé + fonds décès pour dirigeant et collaborateurs : écosystème humain."},{t:"⚖️ Fiscalité OHADA", d:"Pré-remplissage TVA, calcul auto des charges sociales, documents conformes."},{t:"🏆 Score de confiance", d:"Des données régulières augmentent votre score pour décrocher des prêts sans garantie physique."},{t:"🔄 Changement de plan", d:"Possible en un clic avec prorata, sans pénalité. Le plan Premium pour les employés."},{t:"🎯 Argument du gain de temps", d:"L'IA fait les écritures, vous donne une vision claire pour décider en 5 minutes."}]; let container=document.getElementById('coachTipsArea'); if(container) container.innerHTML=tips.map((tip,idx)=>`<div class="option coach-tip-item" data-desc="${tip.d.replace(/"/g,'&quot;')}"><strong>${tip.t}</strong><div class="coach-desc" id="desc-${idx}"></div></div>`).join(''); document.querySelectorAll('.coach-tip-item').forEach((el,idx)=>{ let descDiv=el.querySelector('.coach-desc'); descDiv.innerText=tips[idx].d; el.addEventListener('click',()=>{ descDiv.style.display=descDiv.style.display==='block'?'none':'block'; }); }); }
+function loadSavedData(){ userXP=parseInt(localStorage.getItem('sada_xp')||'0'); totalCorrect=parseInt(localStorage.getItem('sada_correct')||'0'); masteredModules=parseInt(localStorage.getItem('sada_modules')||'0'); bestCombo=parseInt(localStorage.getItem('sada_bestCombo')||'0'); updateUI(); }
+function updateUI(){
+    let level = Math.floor(userXP/500)+1;
+    let mastery = Math.min(100, Math.floor((userXP/1800)*100));
+    document.getElementById('xpDisplay') && (document.getElementById('xpDisplay').innerText = userXP+' XP');
+    document.getElementById('levelDisplay') && (document.getElementById('levelDisplay').innerText = 'Niveau '+level);
+    document.getElementById('yourScoreSpan') && (document.getElementById('yourScoreSpan').innerText = userXP+' XP');
+    document.getElementById('correctAnswersCount') && (document.getElementById('correctAnswersCount').innerText = totalCorrect);
+    document.getElementById('completedModulesCount') && (document.getElementById('completedModulesCount').innerText = masteredModules);
+    document.getElementById('maxComboDisplay') && (document.getElementById('maxComboDisplay').innerText = bestCombo);
+    document.getElementById('masteryPercent') && (document.getElementById('masteryPercent').innerText = mastery+'%');
+    let fill = document.getElementById('xpFillBar');
+    if(fill) fill.style.width = (userXP%500)/5+'%';
+    document.getElementById('comboIndicator') && (document.getElementById('comboIndicator').innerText = currentCombo>0?`🔥 Combo x${currentCombo}`:'⚡ Combo 0');
+    localStorage.setItem('sada_xp',userXP); localStorage.setItem('sada_correct',totalCorrect); localStorage.setItem('sada_modules',masteredModules); localStorage.setItem('sada_bestCombo',bestCombo);
+}
+function addXP(amount){ userXP+=amount; currentCombo++; if(currentCombo>bestCombo) bestCombo=currentCombo; totalCorrect++; updateUI(); let toast=document.createElement('div'); toast.className='toast-xp'; toast.innerText=`+${amount} XP ! Combo x${currentCombo}`; document.body.appendChild(toast); setTimeout(()=>toast.remove(),1500);}
+function resetCombo(){ currentCombo=0; updateUI(); }
+loadSavedData();
+renderModulesList();
+renderFlashcards();
+renderCoachCards();
+renderSimulation();
+updateUI();
+</script>
+</body>
+</html>
